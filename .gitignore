@@ -1,0 +1,6 @@
+
+.cache/clangd/index
+apps/.cache/clangd/index
+build/linux-debug
+compile_commands.json
+neovim.json
