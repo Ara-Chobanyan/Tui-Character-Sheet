@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
   std::vector<std::string> input_entries(6, "");
   int input_selected{ 0 };
 
-  // right half of the vbox
+  // shows the modifiers of the attributes
   Component input{ Menu(&input_entries, &input_selected) };
 
   std::string input_add_content_str;
@@ -51,58 +51,20 @@ int main(int argc, char* argv[])
   input_wis.on_enter = [&] { onEenterEvent(input_add_content_wis, 4); };
   input_cha.on_enter = [&] { onEenterEvent(input_add_content_cha, 5); };
 
-
-  // input_str.on_enter = [&] {
-  //   auto tempStr = input_add_content_str;
-  //   input_entries.at(0) = modFunc(input_add_content_str);
-  //   input_add_content_str = tempStr;
-  // };
-
-  // input_dex.on_enter = [&] {
-  //   auto tempDex = input_add_content_dex;
-  //   input_entries.at(1) = modFunc(input_add_content_dex);
-  //   input_add_content_dex = tempDex;
-  // };
-
-  // input_con.on_enter = [&] {
-  //   auto tempCon = input_add_content_con;
-  //   input_entries.at(2) = modFunc(input_add_content_con);
-  //   input_add_content_con = tempCon;
-  // };
-
-  // input_int.on_enter = [&] {
-  //   auto tempInt = input_add_content_int;
-  //   input_entries.at(3) = modFunc(input_add_content_int);
-  //   input_add_content_int = tempInt;
-  // };
-
-  // input_wis.on_enter = [&] {
-  //   auto tempWis = input_add_content_wis;
-  //   input_entries.at(4) = modFunc(input_add_content_wis);
-  //   input_add_content_wis = tempWis;
-  // };
-
-  // input_cha.on_enter = [&] {
-  //   auto tempCha = input_add_content_cha;
-  //   input_entries.at(5) = modFunc(input_add_content_cha);
-  //   input_add_content_cha = tempCha;
-  // };
-
   Component input_add_str{ Input(
-    &input_add_content_str, "input files", input_str) };
+    &input_add_content_str, "Strength", input_str) };
   Component input_add_dex{ Input(
-    &input_add_content_dex, "input files", input_dex) };
-  Component input_add_wis{ Input(
-    &input_add_content_wis, "input files", input_wis) };
+    &input_add_content_dex, "Dexterity", input_dex) };
+  Component input_add_wis{ Input(&input_add_content_wis, "Wisdom", input_wis) };
   Component input_add_int{ Input(
-    &input_add_content_int, "input files", input_int) };
+    &input_add_content_int, "Intelligences", input_int) };
   Component input_add_con{ Input(
-    &input_add_content_con, "input files", input_con) };
+    &input_add_content_con, "Constitution", input_con) };
   Component input_add_cha{ Input(
-    &input_add_content_cha, "input files", input_cha) };
+    &input_add_content_cha, "Charisma", input_cha) };
 
 
-  // Alows the use of the inputs.
+  // Lines up the input and the parallel modifier index.
   auto compiler_component{ Container::Horizontal({ Container::Vertical({
     Container::Horizontal({ input_add_str, input }),
     Container::Horizontal({ input_add_dex, input }),
