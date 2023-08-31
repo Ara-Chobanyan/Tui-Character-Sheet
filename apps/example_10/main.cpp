@@ -13,34 +13,12 @@ int main(int argc, char* argv[])
 {
   using namespace ftxui;
 
-  // std::string firstName;
-  // std::string lastName;
-  // std::string password;
+  auto modFunc{ [&](const std::string& attribute) -> std::string {
+    int attributeInt{ (std::stoi(attribute) - 10) / 2 };
+    return std::to_string(attributeInt);
+  } };
 
-  // Component inputFirstName{ Input(&firstName, "first name") };
-  // Component inputLastName{ Input(&lastName, "last name") };
-
-  // InputOption passwordOptions;
-  // passwordOptions.password = true;
-  // Component inputPassword{ Input(&password, "password", passwordOptions) };
-
-  // auto component{ Container::Vertical(
-  //   { inputFirstName, inputLastName, inputPassword }) };
-
-  // auto renderer{ Renderer(component, [&] {
-  //   return vbox({ text("Hello " + firstName + " " + lastName),
-  //            separator(),
-  //            hbox(text(" First Name : "), inputFirstName->Render()),
-  //            hbox(text(" Last Name : "), inputLastName->Render()),
-  //            hbox(text(" Password : "), inputPassword->Render()) })
-  //          | border;
-  // }) };
-
-  // auto screen{ ScreenInteractive::TerminalOutput() };
-  // screen.Loop(renderer);
-
-
-  std::vector<std::string> input_entries(6);
+  std::vector<std::string> input_entries(6, "");
   int input_selected{ 0 };
 
   // right half of the vbox
@@ -60,42 +38,55 @@ int main(int argc, char* argv[])
   auto input_cha{ InputOption() };
   auto input_con{ InputOption() };
 
-  // str
-  // dex
-  // con
-  // int
-  // wis
-  // cha
+  auto onEenterEvent{ [&](std::string& input_content, int index) -> void {
+    auto temp = input_content;
+    input_entries.at(index) = modFunc(input_content);
+    input_content = temp;
+  } };
 
-  input_str.on_enter = [&] {
-    input_entries.at(0) = input_add_content_str;
-    input_add_content_str = "";
-  };
+  input_str.on_enter = [&] { onEenterEvent(input_add_content_str, 0); };
+  input_dex.on_enter = [&] { onEenterEvent(input_add_content_dex, 1); };
+  input_con.on_enter = [&] { onEenterEvent(input_add_content_con, 2); };
+  input_int.on_enter = [&] { onEenterEvent(input_add_content_int, 3); };
+  input_wis.on_enter = [&] { onEenterEvent(input_add_content_wis, 4); };
+  input_cha.on_enter = [&] { onEenterEvent(input_add_content_cha, 5); };
 
-  input_dex.on_enter = [&] {
-    input_entries.at(1) = input_add_content_dex;
-    input_add_content_dex = "";
-  };
 
-  input_con.on_enter = [&] {
-    input_entries.at(2) = input_add_content_con;
-    input_add_content_con = "";
-  };
+  // input_str.on_enter = [&] {
+  //   auto tempStr = input_add_content_str;
+  //   input_entries.at(0) = modFunc(input_add_content_str);
+  //   input_add_content_str = tempStr;
+  // };
 
-  input_int.on_enter = [&] {
-    input_entries.at(3) = input_add_content_int;
-    input_add_content_int = "";
-  };
+  // input_dex.on_enter = [&] {
+  //   auto tempDex = input_add_content_dex;
+  //   input_entries.at(1) = modFunc(input_add_content_dex);
+  //   input_add_content_dex = tempDex;
+  // };
 
-  input_wis.on_enter = [&] {
-    input_entries.at(4) = input_add_content_wis;
-    input_add_content_wis = "";
-  };
+  // input_con.on_enter = [&] {
+  //   auto tempCon = input_add_content_con;
+  //   input_entries.at(2) = modFunc(input_add_content_con);
+  //   input_add_content_con = tempCon;
+  // };
 
-  input_cha.on_enter = [&] {
-    input_entries.at(5) = input_add_content_cha;
-    input_add_content_cha = input_add_content_cha;
-  };
+  // input_int.on_enter = [&] {
+  //   auto tempInt = input_add_content_int;
+  //   input_entries.at(3) = modFunc(input_add_content_int);
+  //   input_add_content_int = tempInt;
+  // };
+
+  // input_wis.on_enter = [&] {
+  //   auto tempWis = input_add_content_wis;
+  //   input_entries.at(4) = modFunc(input_add_content_wis);
+  //   input_add_content_wis = tempWis;
+  // };
+
+  // input_cha.on_enter = [&] {
+  //   auto tempCha = input_add_content_cha;
+  //   input_entries.at(5) = modFunc(input_add_content_cha);
+  //   input_add_content_cha = tempCha;
+  // };
 
   Component input_add_str{ Input(
     &input_add_content_str, "input files", input_str) };
@@ -123,7 +114,7 @@ int main(int argc, char* argv[])
 
 
   auto compiler_renderer{ Renderer(compiler_component, [&] {
-    auto input_win{ window(text("Input"),
+    auto input_win{ window(text("Attributes"),
       hbox({ vbox({ hbox({
                       text("Str: "),
                       input_add_str->Render(),
