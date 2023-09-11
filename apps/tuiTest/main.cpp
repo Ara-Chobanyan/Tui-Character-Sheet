@@ -10,7 +10,7 @@
 #include <atomic>
 #include <thread>
 
-
+// Make all of this dynamic, use input boxes
 int main()
 {
   using namespace ftxui;
@@ -136,7 +136,3 @@ int main()
   std::cout << '\n';
   return 0;
 }
-
-// goals
-// [x] implement a basic front sheet
-// [x] implement a basic tab function

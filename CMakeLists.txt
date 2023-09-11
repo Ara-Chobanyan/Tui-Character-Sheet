@@ -11,6 +11,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
   GIT_TAG v4.1.1)
 FetchContent_MakeAvailable(ftxui)
+add_compile_options(-Wall -Wextra -Wpedantic)
 
 add_subdirectory(apps)
 add_subdirectory(include)

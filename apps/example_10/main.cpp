@@ -7,16 +7,32 @@
 #include <ftxui/util/ref.hpp>
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <exception>
+#include <string_view>
+#include <fstream>
+
+enum class Attributes { str, dex, con, inti, wis, cha };
 
 
-int main(int argc, char* argv[])
+int main()
 {
   using namespace ftxui;
+  std::string output{ "debug.txt" };
+  std::ofstream outPutFile{ output };
+
 
   auto modFunc{ [&](const std::string& attribute) -> std::string {
     int attributeInt{ (std::stoi(attribute) - 10) / 2 };
     return std::to_string(attributeInt);
   } };
+
+  auto isNumber{ [&](const std::string& s) -> bool {
+    return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) {
+      return !std::isdigit(c);
+    }) == s.end();
+  } };
+
 
   std::vector<std::string> input_entries(6, "");
   int input_selected{ 0 };
@@ -24,91 +40,254 @@ int main(int argc, char* argv[])
   // shows the modifiers of the attributes
   Component input{ Menu(&input_entries, &input_selected) };
 
-  std::string input_add_content_str;
-  std::string input_add_content_dex;
-  std::string input_add_content_con;
-  std::string input_add_content_int;
-  std::string input_add_content_wis;
-  std::string input_add_content_cha;
+  // holds the whole attribute value
+  std::string strAttribute;
+  std::string dexAttribute;
+  std::string conAttribute;
+  std::string intAttribute;
+  std::string wisAttribute;
+  std::string chaAttribute;
 
-  auto input_str{ InputOption() };
-  auto input_dex{ InputOption() };
-  auto input_wis{ InputOption() };
-  auto input_int{ InputOption() };
-  auto input_cha{ InputOption() };
-  auto input_con{ InputOption() };
+  std::string strAttributeDamage;
+  std::string dexAttributeDamage;
+  std::string conAttributeDamage;
+  std::string intAttributeDamage;
+  std::string wisAttributeDamage;
+  std::string chaAttributeDamage;
 
-  auto onEenterEvent{ [&](std::string& input_content, int index) -> void {
+  std::unordered_map<std::string, std::string> storage{
+    { "strength", strAttributeDamage },
+    { "dexterity", dexAttributeDamage },
+    { "constitution", conAttributeDamage },
+    { "intelligence", intAttributeDamage },
+    { "wisdom", wisAttributeDamage },
+    { "cha", chaAttributeDamage },
+  };
+
+  // Normal attribute input
+  auto inputStr{ InputOption() };
+  auto inputDex{ InputOption() };
+  auto inputWis{ InputOption() };
+  auto inputInt{ InputOption() };
+  auto inputCha{ InputOption() };
+  auto inputCon{ InputOption() };
+
+  // damage attribute input
+  auto inputStrDamage{ InputOption() };
+  auto inputDexDamage{ InputOption() };
+  auto inputWisDamage{ InputOption() };
+  auto inputIntDamage{ InputOption() };
+  auto inputChaDamage{ InputOption() };
+  auto inputConDamage{ InputOption() };
+
+  auto onEnterEvent{ [&](std::string& input_content, int index) -> void {
     auto temp = input_content;
     input_entries.at(index) = modFunc(input_content);
     input_content = temp;
   } };
 
-  input_str.on_enter = [&] { onEenterEvent(input_add_content_str, 0); };
-  input_dex.on_enter = [&] { onEenterEvent(input_add_content_dex, 1); };
-  input_con.on_enter = [&] { onEenterEvent(input_add_content_con, 2); };
-  input_int.on_enter = [&] { onEenterEvent(input_add_content_int, 3); };
-  input_wis.on_enter = [&] { onEenterEvent(input_add_content_wis, 4); };
-  input_cha.on_enter = [&] { onEenterEvent(input_add_content_cha, 5); };
 
-  Component input_add_str{ Input(
-    &input_add_content_str, "Strength", input_str) };
-  Component input_add_dex{ Input(
-    &input_add_content_dex, "Dexterity", input_dex) };
-  Component input_add_wis{ Input(&input_add_content_wis, "Wisdom", input_wis) };
-  Component input_add_int{ Input(
-    &input_add_content_int, "Intelligences", input_int) };
-  Component input_add_con{ Input(
-    &input_add_content_con, "Constitution", input_con) };
-  Component input_add_cha{ Input(
-    &input_add_content_cha, "Charisma", input_cha) };
+  // To restore attribute from damage taken
+  auto revertDamage{ [&](std::string& attribute,
+                       std::string_view keyAttribute) -> void {
+    try {
+      int damageValue{ std::stoi(storage[keyAttribute.data()]) };
+      int attributeValue{ std::stoi(attribute) };
+      attribute = std::to_string(attributeValue + damageValue);
+    } catch (const std::exception& e) {
+      outPutFile << e.what() << '\n';
+    };
+  } };
+
+  // To damage the attribute or activate restoration
+  auto applyDamage{ [&](std::string& damage,
+                      std::string& attribute,
+                      std::string_view keyAttribute,
+                      int index) -> void {
+    try {
+      int attributeVal{ std::stoi(attribute) };
+      int dmgVal{ std::stoi(damage) };
+
+      if (storage[keyAttribute.data()] == damage) { return; }
+
+      if (isNumber(storage[keyAttribute.data()])) {
+        int storedDmg{ std::stoi(storage[keyAttribute.data()]) };
+        attributeVal += storedDmg;
+        attributeVal -= dmgVal;
+        storage[keyAttribute.data()] = std::to_string(dmgVal);
+        attribute = std::to_string(attributeVal);
+        onEnterEvent(attribute, index);
+      }
 
 
-  // Lines up the input and the parallel modifier index.
-  auto compiler_component{ Container::Horizontal({ Container::Vertical({
-    Container::Horizontal({ input_add_str, input }),
-    Container::Horizontal({ input_add_dex, input }),
-    Container::Horizontal({ input_add_con, input }),
-    Container::Horizontal({ input_add_int, input }),
-    Container::Horizontal({ input_add_wis, input }),
-    Container::Horizontal({ input_add_cha, input }),
+      if (!isNumber(storage[keyAttribute.data()])) {
+          /// storedDmg is the issue
+        // int storedDmg{ std::stoi(storage[keyAttribute.data()]) };
+        // attributeVal += storedDmg;
+        attributeVal -= dmgVal;
+        storage[keyAttribute.data()] = std::to_string(dmgVal);
+        attribute = std::to_string(attributeVal);
+        onEnterEvent(attribute, index);
+      }
+
+    } catch (const std::exception& e) {
+      outPutFile << e.what() << '\n';
+      outPutFile << attribute << '\n';
+      outPutFile << damage << '\n';
+      outPutFile << keyAttribute << '\n';
+    }
+  } };
+
+
+  auto onDamageEvent{ [&](std::string& damage, const Attributes& atr) -> void {
+    switch (atr) {
+    case Attributes::str:
+      applyDamage(damage, strAttribute, "strength", 0);
+      break;
+    case Attributes::dex:
+      applyDamage(damage, dexAttribute, "dexterity", 1);
+      break;
+    case Attributes::wis:
+      applyDamage(damage, wisAttribute, "wisdom", 2);
+      break;
+    case Attributes::inti:
+      applyDamage(damage, intAttribute, "intelligence", 3);
+      break;
+    case Attributes::cha:
+      applyDamage(damage, chaAttribute, "charisma", 4);
+      break;
+    case Attributes::con:
+      applyDamage(damage, conAttribute, "constitution", 5);
+      break;
+    }
+  } };
+
+  inputStr.on_enter = [&] { onEnterEvent(strAttribute, 0); };
+  inputDex.on_enter = [&] { onEnterEvent(dexAttribute, 1); };
+  inputCon.on_enter = [&] { onEnterEvent(conAttribute, 2); };
+  inputInt.on_enter = [&] { onEnterEvent(intAttribute, 3); };
+  inputWis.on_enter = [&] { onEnterEvent(wisAttribute, 4); };
+  inputCha.on_enter = [&] { onEnterEvent(chaAttribute, 5); };
+
+  inputStrDamage.on_enter = [&] {
+    onDamageEvent(strAttributeDamage, Attributes::str);
+  };
+  inputDexDamage.on_enter = [&] {
+    onDamageEvent(dexAttributeDamage, Attributes::dex);
+  };
+  inputConDamage.on_enter = [&] {
+    onDamageEvent(conAttributeDamage, Attributes::con);
+  };
+  inputIntDamage.on_enter = [&] {
+    onDamageEvent(intAttributeDamage, Attributes::inti);
+  };
+  inputWisDamage.on_enter = [&] {
+    onDamageEvent(wisAttributeDamage, Attributes::wis);
+  };
+  inputChaDamage.on_enter = [&] {
+    onDamageEvent(chaAttributeDamage, Attributes::cha);
+  };
+
+
+  Component inputAddStr{ Input(&strAttribute, "Strength", inputStr) };
+  Component inputAddDex{ Input(&dexAttribute, "Dexterity", inputDex) };
+  Component inputAddWis{ Input(&wisAttribute, "Wisdom", inputWis) };
+  Component inputAddInt{ Input(&intAttribute, "Intelligences", inputInt) };
+  Component inputAddCon{ Input(&conAttribute, "Constitution", inputCon) };
+  Component inputAddCha{ Input(&chaAttribute, "Charisma", inputCha) };
+
+  // clang-format off
+  Component inputDamageStr{Input(&strAttributeDamage,"Strength",inputStrDamage)};
+  Component inputDamageDex{Input(&dexAttributeDamage,"Dexterity",inputDexDamage)};
+  Component inputDamageWis{Input(&wisAttributeDamage,"Wisdom",inputWisDamage)};
+  Component inputDamageInt{Input(&intAttributeDamage,"Intelligences",inputIntDamage)};
+  Component inputDamageCon{Input(&conAttributeDamage,"Constitution",inputConDamage)};
+  Component inputDamageCha{Input(&chaAttributeDamage,"Charisma",inputChaDamage)};
+  // clang-format on
+
+
+  auto attribute_component{ Container::Horizontal({ Container::Vertical({
+    Container::Horizontal({ inputAddStr, input }),
+    Container::Horizontal({ inputAddDex, input }),
+    Container::Horizontal({ inputAddCon, input }),
+    Container::Horizontal({ inputAddInt, input }),
+    Container::Horizontal({ inputAddWis, input }),
+    Container::Horizontal({ inputAddCha, input }),
+    Container::Horizontal({ inputDamageStr, input }),
+    Container::Horizontal({ inputDamageDex, input }),
+    Container::Horizontal({ inputDamageWis, input }),
+    Container::Horizontal({ inputDamageInt, input }),
+    Container::Horizontal({ inputDamageCon, input }),
+    Container::Horizontal({ inputDamageCha, input }),
   }) }) };
 
 
-  auto compiler_renderer{ Renderer(compiler_component, [&] {
+  auto attribute_renderer{ Renderer(attribute_component, [&] {
     auto input_win{ window(text("Attributes"),
       hbox({ vbox({ hbox({
                       text("Str: "),
-                      input_add_str->Render(),
+                      inputAddStr->Render(),
                     }) | size(WIDTH, EQUAL, 20)
                       | size(HEIGHT, EQUAL, 1),
                hbox({
                  text("Dex: "),
-                 input_add_dex->Render(),
+                 inputAddDex->Render(),
                }) | size(WIDTH, EQUAL, 20)
                  | size(HEIGHT, EQUAL, 1),
                hbox({
                  text("Con: "),
-                 input_add_con->Render(),
+                 inputAddCon->Render(),
                }) | size(WIDTH, EQUAL, 20)
                  | size(HEIGHT, EQUAL, 1),
                hbox({
                  text("Int: "),
-                 input_add_int->Render(),
+                 inputAddInt->Render(),
                }) | size(WIDTH, EQUAL, 20)
                  | size(HEIGHT, EQUAL, 1),
                hbox({
                  text("Wis: "),
-                 input_add_wis->Render(),
+                 inputAddWis->Render(),
                }) | size(WIDTH, EQUAL, 20)
                  | size(HEIGHT, EQUAL, 1),
                hbox({
                  text("Cha: "),
-                 input_add_cha->Render(),
+                 inputAddCha->Render(),
                }) | size(WIDTH, EQUAL, 20)
                  | size(HEIGHT, EQUAL, 1),
                filler() }),
         separator(),
+        // This is were I can implement drain or damage comopnents.
+        vbox({ hbox({
+                 text("Str: "),
+                 inputDamageStr->Render(),
+               }) | size(WIDTH, EQUAL, 20)
+                 | size(HEIGHT, EQUAL, 1),
+          hbox({
+            text("Dex: "),
+            inputDamageDex->Render(),
+          }) | size(WIDTH, EQUAL, 20)
+            | size(HEIGHT, EQUAL, 1),
+          hbox({
+            text("Con: "),
+            inputDamageCon->Render(),
+          }) | size(WIDTH, EQUAL, 20)
+            | size(HEIGHT, EQUAL, 1),
+          hbox({
+            text("Int: "),
+            inputDamageInt->Render(),
+          }) | size(WIDTH, EQUAL, 20)
+            | size(HEIGHT, EQUAL, 1),
+          hbox({
+            text("Wis: "),
+            inputDamageWis->Render(),
+          }) | size(WIDTH, EQUAL, 20)
+            | size(HEIGHT, EQUAL, 1),
+          hbox({
+            text("Cha: "),
+            inputDamageCha->Render(),
+          }) | size(WIDTH, EQUAL, 20)
+            | size(HEIGHT, EQUAL, 1),
+          filler() }),
         input->Render() | vscroll_indicator | frame | size(HEIGHT, EQUAL, 4)
           | flex })) };
 
@@ -124,7 +303,7 @@ int main(int argc, char* argv[])
   }) };
 
   auto screen{ ScreenInteractive::TerminalOutput() };
-  screen.Loop(compiler_renderer);
+  screen.Loop(attribute_renderer);
 
   return 0;
 }
