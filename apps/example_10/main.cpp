@@ -14,6 +14,7 @@
 
 enum class Attributes { str, dex, con, inti, wis, cha };
 
+// TODO(Ara) Cha affects wisdom mod, con affects cha mod, wisdom affects con mod
 
 int main()
 {
@@ -87,18 +88,6 @@ int main()
   } };
 
 
-  // To restore attribute from damage taken
-  auto revertDamage{ [&](std::string& attribute,
-                       std::string_view keyAttribute) -> void {
-    try {
-      int damageValue{ std::stoi(storage[keyAttribute.data()]) };
-      int attributeValue{ std::stoi(attribute) };
-      attribute = std::to_string(attributeValue + damageValue);
-    } catch (const std::exception& e) {
-      outPutFile << e.what() << '\n';
-    };
-  } };
-
   // To damage the attribute or activate restoration
   auto applyDamage{ [&](std::string& damage,
                       std::string& attribute,
@@ -121,7 +110,7 @@ int main()
 
 
       if (!isNumber(storage[keyAttribute.data()])) {
-          /// storedDmg is the issue
+        /// storedDmg is the issue
         // int storedDmg{ std::stoi(storage[keyAttribute.data()]) };
         // attributeVal += storedDmg;
         attributeVal -= dmgVal;
@@ -147,17 +136,17 @@ int main()
     case Attributes::dex:
       applyDamage(damage, dexAttribute, "dexterity", 1);
       break;
-    case Attributes::wis:
-      applyDamage(damage, wisAttribute, "wisdom", 2);
+    case Attributes::con:
+      applyDamage(damage, conAttribute, "constitution", 2);
       break;
     case Attributes::inti:
       applyDamage(damage, intAttribute, "intelligence", 3);
       break;
-    case Attributes::cha:
-      applyDamage(damage, chaAttribute, "charisma", 4);
+    case Attributes::wis:
+      applyDamage(damage, wisAttribute, "wisdom", 4);
       break;
-    case Attributes::con:
-      applyDamage(damage, conAttribute, "constitution", 5);
+    case Attributes::cha:
+      applyDamage(damage, chaAttribute, "charisma", 5);
       break;
     }
   } };
