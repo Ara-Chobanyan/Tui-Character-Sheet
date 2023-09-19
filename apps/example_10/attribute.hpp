@@ -41,7 +41,7 @@ public:
 
 
 private:
-  modFuncType m_modFunc = { [&](const std::string& attribute) -> std::string {
+  modFuncType m_modFunc{ [&](const std::string& attribute) -> std::string {
     int attributeInt{ (std::stoi(attribute) - 10) / 2 };
     return std::to_string(attributeInt);
   } };
