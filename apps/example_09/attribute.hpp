@@ -33,14 +33,18 @@ public:
   Attribute(std::string_view debugFile = "debug.txt");
   ~Attribute();
 
+  void render();
+
+protected:
   void setUpAttributeEvent();
   void setupInputAttribute();
   void setUpAttributeComponent();
 
-  void render();
-
 
 private:
+  ftxui::Element createAddComponent();
+  ftxui::Element createDrainComponent();
+
   modFuncType m_modFunc{ [&](const std::string& attribute) -> std::string {
     int attributeInt{ (std::stoi(attribute) - 10) / 2 };
     return std::to_string(attributeInt);
@@ -54,7 +58,7 @@ private:
 
   onEnterEventType m_onEnterEvent{ [&](std::string& input_content,
                                      int index) -> void {
-    auto temp = input_content;
+    std::string temp{ input_content };
     inputEntries.at(index) = m_modFunc(input_content);
     input_content = temp;
   } };
@@ -75,11 +79,10 @@ private:
         attributeVal += storedDmg;
         attributeVal -= dmgVal;
         storageOfAtrDmgTaken[keyAttribute.data()] = std::to_string(dmgVal);
+        // Sense attribute is a reference it will affect the class field
         attribute = std::to_string(attributeVal);
         m_onEnterEvent(attribute, index);
       }
-
-
       if (!m_isNumber(storageOfAtrDmgTaken[keyAttribute.data()])) {
         attributeVal -= dmgVal;
         storageOfAtrDmgTaken[keyAttribute.data()] = std::to_string(dmgVal);
@@ -95,31 +98,29 @@ private:
     }
   } };
 
-  onDamageEventType m_onDamageEvent{
-    [&](std::string& damage, const Attributes& atr) -> void {
-      switch (atr) {
-      case Attributes::str:
-        m_applyDamage(damage, strAttribute, "strength", 0);
-        break;
-      case Attributes::dex:
-        m_applyDamage(damage, dexAttribute, "dexterity", 1);
-        break;
-      case Attributes::con:
-        m_applyDamage(damage, conAttribute, "constitution", 2);
-        break;
-      case Attributes::inti:
-        m_applyDamage(damage, intAttribute, "intelligence", 3);
-        break;
-      case Attributes::wis:
-        m_applyDamage(damage, wisAttribute, "wisdom", 4);
-        break;
-      case Attributes::cha:
-        m_applyDamage(damage, chaAttribute, "charisma", 5);
-        break;
-      }
+  onDamageEventType m_onDamageEvent{ [&](std::string& damage,
+                                       const Attributes& atr) -> void {
+    switch (atr) {
+    case Attributes::str:
+      m_applyDamage(damage, strAttribute, "strength", 0);
+      break;
+    case Attributes::dex:
+      m_applyDamage(damage, dexAttribute, "dexterity", 1);
+      break;
+    case Attributes::con:
+      m_applyDamage(damage, conAttribute, "constitution", 2);
+      break;
+    case Attributes::inti:
+      m_applyDamage(damage, intAttribute, "intelligence", 3);
+      break;
+    case Attributes::wis:
+      m_applyDamage(damage, wisAttribute, "wisdom", 4);
+      break;
+    case Attributes::cha:
+      m_applyDamage(damage, chaAttribute, "charisma", 5);
+      break;
     }
-
-  };
+  } };
 
   std::ofstream outPutFile;
 
@@ -129,7 +130,6 @@ private:
   std::string intAttribute;
   std::string wisAttribute;
   std::string chaAttribute;
-
 
   std::string strAttributeDamage;
   std::string dexAttributeDamage;

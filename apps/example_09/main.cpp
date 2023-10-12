@@ -4,7 +4,5 @@ int main()
 {
   Attribute test{};
   test.render();
-
-
   return 0;
 }

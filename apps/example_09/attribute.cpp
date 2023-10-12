@@ -88,76 +88,14 @@ void Attribute::render()
   setupInputAttribute();
   setUpAttributeComponent();
 
-  // TODO(Ara) clean this up and make multiple components were I can just then
-  // put them together
   auto attributeRender{ Renderer(attributeComponent, [&] {
     auto inputWin{ window(ftxui::text("Attributes"),
-      ftxui::hbox({ ftxui::vbox({ ftxui::hbox({
-                                    ftxui::text("Str: "),
-                                    inputAddStrComp->Render(),
-                                  }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                                    | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-                      ftxui::hbox({
-                        ftxui::text("Dex: "),
-                        inputAddDexComp->Render(),
-                      }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                        | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-                      ftxui::hbox({
-                        ftxui::text("Con: "),
-                        inputAddConComp->Render(),
-                      }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                        | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-                      ftxui::hbox({
-                        ftxui::text("Int: "),
-                        inputAddIntComp->Render(),
-                      }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                        | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-                      ftxui::hbox({
-                        ftxui::text("Wis: "),
-                        inputAddwisComp->Render(),
-                      }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                        | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-                      ftxui::hbox({
-                        ftxui::text("Cha: "),
-                        inputAddChaComp->Render(),
-                      }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                        | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-                      ftxui::filler() }),
+      ftxui::hbox({ createAddComponent(),
         ftxui::separator(),
-        // This is were I can implement drain or damage comopnents.
-        ftxui::vbox({ ftxui::hbox({
-                        ftxui::text("Str: "),
-                        inputDmgStrComp->Render(),
-                      }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-                        | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-          ftxui::hbox({
-            ftxui::text("Dex: "),
-            inputDmgDexComp->Render(),
-          }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-            | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-          ftxui::hbox({
-            ftxui::text("Con: "),
-            inputDmgConComp->Render(),
-          }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-            | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-          ftxui::hbox({
-            ftxui::text("Int: "),
-            inputDmgIntComp->Render(),
-          }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-            | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-          ftxui::hbox({
-            ftxui::text("Wis: "),
-            inputDmgwisComp->Render(),
-          }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-            | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-          ftxui::hbox({
-            ftxui::text("Cha: "),
-            inputDmgChaComp->Render(),
-          }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
-            | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
-          ftxui::filler() }),
+        createDrainComponent(),
         input->Render() | ftxui::vscroll_indicator | ftxui::frame
           | size(ftxui::HEIGHT, ftxui::EQUAL, 4) | ftxui::flex })) };
+
     return ftxui::vbox({
              ftxui::hbox({ ftxui::vbox({
                              inputWin | size(ftxui::WIDTH, ftxui::EQUAL, 60),
@@ -170,4 +108,76 @@ void Attribute::render()
 
   auto screen{ ftxui::ScreenInteractive::TerminalOutput() };
   screen.Loop(attributeRender);
+};
+
+//-------------------------------------------------------------------------------------------------
+ftxui::Element Attribute::createAddComponent()
+{
+  return ftxui::vbox({ ftxui::hbox({
+                         ftxui::text("Str: "),
+                         inputAddStrComp->Render(),
+                       }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+                         | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Dex: "),
+      inputAddDexComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Con: "),
+      inputAddConComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Int: "),
+      inputAddIntComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Wis: "),
+      inputAddwisComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Cha: "),
+      inputAddChaComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::filler() });
+}
+
+//-------------------------------------------------------------------------------------------------
+ftxui::Element Attribute::createDrainComponent()
+{
+  return ftxui::vbox({ ftxui::hbox({
+                         ftxui::text("Str: "),
+                         inputDmgStrComp->Render(),
+                       }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+                         | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Dex: "),
+      inputDmgDexComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Con: "),
+      inputDmgConComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Int: "),
+      inputDmgIntComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Wis: "),
+      inputDmgwisComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::hbox({
+      ftxui::text("Cha: "),
+      inputDmgChaComp->Render(),
+    }) | size(ftxui::WIDTH, ftxui::EQUAL, 20)
+      | size(ftxui::HEIGHT, ftxui::EQUAL, 1),
+    ftxui::filler() });
 };
