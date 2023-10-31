@@ -7,6 +7,7 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/util/ref.hpp>
+
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -56,11 +57,12 @@ private:
     }) == s.end();
   } };
 
-  onEnterEventType m_onEnterEvent{ [&](std::string& input_content,
+  onEnterEventType m_onEnterEvent{ [&](std::string& inputContent,
                                      int index) -> void {
-    std::string temp{ input_content };
-    inputEntries.at(index) = m_modFunc(input_content);
-    input_content = temp;
+    // std::string temp{ inputContent };
+    inputEntries.at(index) = m_modFunc(inputContent);
+    // Have no idea why I put this here, seems like it's useless
+    // inputContent = temp;
   } };
 
   applyDamageType m_applyDamage{ [&](std::string& damage,
@@ -68,13 +70,17 @@ private:
                                    std::string_view keyAttribute,
                                    int index) -> void {
     try {
+      std::string storedDamageTaken{
+        storageOfAtrDmgTaken[keyAttribute.data()]
+      };
+      if (storedDamageTaken == damage) { return; }
+
       int attributeVal{ std::stoi(attribute) };
       int dmgVal{ std::stoi(damage) };
+
       if (dmgVal < 0) { dmgVal = std::abs(dmgVal); }
 
-      if (storageOfAtrDmgTaken[keyAttribute.data()] == damage) { return; }
-
-      if (m_isNumber(storageOfAtrDmgTaken[keyAttribute.data()])) {
+      if (m_isNumber(storedDamageTaken)) {
         int storedDmg{ std::stoi(storageOfAtrDmgTaken[keyAttribute.data()]) };
         attributeVal += storedDmg;
         attributeVal -= dmgVal;
@@ -83,7 +89,8 @@ private:
         attribute = std::to_string(attributeVal);
         m_onEnterEvent(attribute, index);
       }
-      if (!m_isNumber(storageOfAtrDmgTaken[keyAttribute.data()])) {
+
+      if (!m_isNumber(storedDamageTaken)) {
         attributeVal -= dmgVal;
         storageOfAtrDmgTaken[keyAttribute.data()] = std::to_string(dmgVal);
         attribute = std::to_string(attributeVal);
